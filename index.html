@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>かたちを しろう（まる・さんかく・しかくの かたはめ）</title>
+  <style>
+    :root {
+      --bg-color: #FFFDE7;
+      --card-bg: #FFFFFF;
+      --text-color: #37474F;
+      --primary-color: #4CAF50;
+      --accent-color: #FF7043;
+      --circle-color: #FF5252;
+      --triangle-color: #FFA726;
+      --square-color: #42A5F5;
+      --slot-empty: #F5F5F5;
+      --slot-stroke: #CFD8DC;
+      --font-family: "Hiragino Maru Gothic ProN", "BIZ UDPGothic", "Yu Gothic", "Meiryo", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      touch-action: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ヘッダー */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 24px;
+      background: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .title-area {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .title-area h1 {
+      font-size: 1.65rem;
+      font-weight: 800;
+      color: #3E2723;
+      letter-spacing: 2px;
+    }
+
+    .step-badge {
+      background: #E8F5E9;
+      color: #2E7D32;
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 1.05rem;
+      font-weight: bold;
+      border: 2px solid #A5D6A7;
+    }
+
+    .controls-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 18px;
+      border-radius: 30px;
+      font-family: inherit;
+      font-size: 1.05rem;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.14);
+      transition: transform 0.1s, box-shadow 0.1s, filter 0.2s;
+    }
+
+    .btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.14);
+    }
+
+    .btn-reset {
+      background: #4FC3F7;
+      color: #FFFFFF;
+    }
+
+    .btn-sound {
+      background: #FFF176;
+      color: #5D4037;
+    }
+
+    .btn-settings {
+      background: #CFD8DC;
+      color: #37474F;
+    }
+
+    .btn-fullscreen {
+      background: #AB47BC;
+      color: #FFFFFF;
+    }
+
+    .btn-download {
+      background: #00897B;
+      color: #FFFFFF;
+    }
+
+    /* メインステージ */
+    #stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px 36px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ガイドメッセージ表示 */
+    .guide-banner {
+      align-self: center;
+      background: #FFFFFF;
+      padding: 8px 28px;
+      border-radius: 30px;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #4E342E;
+      border: 3px solid #FFE082;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+      animation: gentleBounce 2.5s infinite ease-in-out;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+      text-align: center;
+    }
+
+    @keyframes gentleBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    /* 型（受け皿・スロットエリア） */
+    .slots-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 36px;
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 28px;
+      border: 4px dashed #B0BEC5;
+      padding: 16px 24px;
+      box-shadow: inset 0 4px 14px rgba(0,0,0,0.03);
+      flex: 1;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .slot {
+      width: 165px;
+      height: 165px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      border-radius: 24px;
+      transition: transform 0.2s, filter 0.2s, background-color 0.2s;
+    }
+
+    /* ステップ4（6個）の時は少しコンパクトに自動調整 */
+    .slots-container.compact .slot {
+      width: 130px;
+      height: 130px;
+    }
+
+    .slots-container.compact .slot-svg {
+      width: 95px;
+      height: 95px;
+    }
+
+    .slot.hovered, .slot.suggested {
+      transform: scale(1.12);
+      filter: drop-shadow(0 0 16px rgba(255, 179, 0, 0.85));
+      background-color: rgba(255, 248, 225, 0.6);
+    }
+
+    .slot-label {
+      margin-top: 6px;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #455A64;
+      background: #FFFFFF;
+      padding: 2px 14px;
+      border-radius: 12px;
+      border: 2px solid #CFD8DC;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .slot-svg {
+      width: 125px;
+      height: 125px;
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.08));
+    }
+
+    /* ピース（動かす形エリア） */
+    .pieces-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 36px;
+      min-height: 190px;
+      background: #FFFFFF;
+      border-radius: 28px;
+      padding: 16px 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    .pieces-container.compact {
+      min-height: 155px;
+      gap: 20px;
+    }
+
+    .piece-holder {
+      width: 155px;
+      height: 155px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .pieces-container.compact .piece-holder {
+      width: 125px;
+      height: 125px;
+    }
+
+    /* 動かすピース本体 */
+    .piece {
+      width: 135px;
+      height: 135px;
+      cursor: grab;
+      position: absolute;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s ease-out;
+      will-change: transform;
+    }
+
+    .pieces-container.compact .piece {
+      width: 105px;
+      height: 105px;
+    }
+
+    .piece:hover {
+      transform: scale(1.06);
+    }
+
+    .piece.dragging {
+      cursor: grabbing;
+      transform: scale(1.2);
+      z-index: 100 !important;
+      opacity: 0.94;
+      filter: drop-shadow(0 14px 28px rgba(0,0,0,0.28));
+      transition: none;
+    }
+
+    .piece.selected {
+      transform: scale(1.15);
+      filter: drop-shadow(0 0 18px #FF9800);
+      animation: pulse 0.9s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { transform: scale(1.1); }
+      to { transform: scale(1.22); }
+    }
+
+    .piece.fitted {
+      cursor: default;
+      pointer-events: none;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .piece-svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.16));
+    }
+
+    .piece-label {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #3E2723;
+      margin-top: 4px;
+    }
+
+    /* 花丸・クリアモーダル */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .clear-card {
+      background: #FFFFFF;
+      border-radius: 36px;
+      padding: 40px 60px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+      max-width: 90vw;
+      border: 8px solid #FFD54F;
+      animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.6); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .clear-hanamaru {
+      width: 190px;
+      height: 190px;
+      margin: 0 auto 15px;
+      animation: rotateHanamaru 0.6s ease-out;
+    }
+
+    @keyframes rotateHanamaru {
+      0% { transform: scale(0) rotate(-45deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    .clear-text-main {
+      font-size: 2.8rem;
+      font-weight: 900;
+      color: #D32F2F;
+      margin-bottom: 10px;
+      letter-spacing: 3px;
+    }
+
+    .clear-text-sub {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: #5D4037;
+      margin-bottom: 30px;
+    }
+
+    .clear-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .btn-large {
+      font-size: 1.45rem;
+      padding: 14px 36px;
+      border-radius: 40px;
+    }
+
+    .btn-next {
+      background: #4CAF50;
+      color: #FFFFFF;
+    }
+
+    .btn-replay {
+      background: #FFB300;
+      color: #FFFFFF;
+    }
+
+    /* 先生用設定モーダル */
+    .settings-card {
+      background: #FFFFFF;
+      border-radius: 28px;
+      padding: 30px 40px;
+      max-width: 580px;
+      width: 92%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+    }
+
+    .settings-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #37474F;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px solid #ECEFF1;
+      padding-bottom: 10px;
+    }
+
+    .settings-group {
+      margin-bottom: 22px;
+    }
+
+    .settings-group label.group-label {
+      display: block;
+      font-size: 1.15rem;
+      font-weight: bold;
+      color: #455A64;
+      margin-bottom: 8px;
+    }
+
+    .options-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .option-btn {
+      flex: 1;
+      min-width: 110px;
+      padding: 10px;
+      font-size: 1.05rem;
+      font-weight: bold;
+      background: #ECEFF1;
+      color: #455A64;
+      border: 3px solid transparent;
+      border-radius: 16px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .option-btn.selected {
+      background: #E8F5E9;
+      color: #2E7D32;
+      border-color: #4CAF50;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #ECEFF1;
+    }
+
+    .toggle-label {
+      font-size: 1.15rem;
+      font-weight: bold;
+      color: #455A64;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 56px;
+      height: 32px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #CFD8DC;
+      transition: .3s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 24px;
+      width: 24px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #4CAF50;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+
+    /* 紙吹雪Canvas */
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* レスポンシブ調整（小さなタブレットや横長電子黒板） */
+    @media (max-height: 600px) {
+      header { padding: 6px 16px; }
+      .title-area h1 { font-size: 1.3rem; }
+      .slot { width: 125px; height: 125px; }
+      .slot-svg { width: 90px; height: 90px; }
+      .piece-holder { width: 115px; height: 115px; }
+      .piece { width: 105px; height: 105px; }
+      .slots-container { min-height: 145px; gap: 20px; padding: 10px; margin-bottom: 10px; }
+      .pieces-container { min-height: 135px; gap: 20px; padding: 10px; }
+      .guide-banner { font-size: 1.15rem; padding: 4px 18px; margin-bottom: 6px; }
+      .clear-card { padding: 24px 36px; }
+      .clear-hanamaru { width: 130px; height: 130px; margin-bottom: 8px; }
+      .clear-text-main { font-size: 2.2rem; }
+      .clear-text-sub { font-size: 1.25rem; margin-bottom: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ヘッダー -->
+  <header>
+    <div class="title-area">
+      <h1>かたちを しろう</h1>
+      <span id="stepBadge" class="step-badge">ステップ 1：まる</span>
+    </div>
+    <div class="controls-area">
+      <button id="btnSound" class="btn btn-sound" title="おと のきりかえ">
+        <span id="soundIcon">🔊</span>
+        <span>おと：ON</span>
+      </button>
+      <button id="btnReset" class="btn btn-reset" title="もういちど やりなおす">
+        <span>🔄</span>
+        <span>やりなおす</span>
+      </button>
+      <button id="btnSettings" class="btn btn-settings" title="せんせいの せってい">
+        <span>⚙️</span>
+        <span>せってい</span>
+      </button>
+      <button id="btnFullscreen" class="btn btn-fullscreen" title="ぜんめん ひょうじ">
+        <span id="fsIcon">⛶</span>
+        <span>ぜんめん</span>
+      </button>
+      <button id="btnDownload" class="btn btn-download" title="アプリを パソコンやタブレットに ダウンロード保存">
+        <span>📥</span>
+        <span>ダウンロード</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- メインステージ -->
+  <main id="stage">
+    <div id="guideBanner" class="guide-banner">
+      おなじ かたちの ところに もっていこう！
+    </div>
+
+    <!-- 上部：型（枠・スロット）エリア -->
+    <div id="slotsContainer" class="slots-container">
+      <!-- JSで動的生成 -->
+    </div>
+
+    <!-- 下部：ピース（動かす図形）エリア -->
+    <div id="piecesContainer" class="pieces-container">
+      <!-- JSで動的生成 -->
+    </div>
+  </main>
+
+  <!-- 紙吹雪キャンバス -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- クリアごほうびモーダル -->
+  <div id="clearModal" class="modal-overlay">
+    <div class="clear-card">
+      <svg class="clear-hanamaru" viewBox="0 0 100 100">
+        <!-- 豪華な二重花丸 SVG -->
+        <circle cx="50" cy="50" r="44" fill="none" stroke="#FF1744" stroke-width="5" stroke-dasharray="2 3"/>
+        <path d="M 50 12 C 55 27, 65 23, 77 16 C 73 31, 83 33, 89 43 C 77 47, 81 60, 85 72 C 71 67, 67 78, 59 87 C 53 74, 43 78, 36 85 C 36 71, 26 68, 17 68 C 25 56, 17 48, 15 37 C 27 35, 25 23, 34 17 C 40 27, 48 23, 50 12 Z" 
+              fill="none" stroke="#FF1744" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="50" cy="50" r="28" fill="none" stroke="#FF1744" stroke-width="5"/>
+        <circle cx="50" cy="50" r="15" fill="none" stroke="#FF1744" stroke-width="4"/>
+      </svg>
+      <div class="clear-text-main">たいへん よくできました！</div>
+      <div id="clearTextSub" class="clear-text-sub">ぜんぶ ぴったり はいったね！</div>
+      <div class="clear-buttons">
+        <button id="btnReplay" class="btn btn-large btn-replay">
+          <span>🔄</span> もういっかい
+        </button>
+        <button id="btnNextStep" class="btn btn-large btn-next">
+          <span>⭐</span> つぎの すてっぷへ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 先生用設定モーダル -->
+  <div id="settingsModal" class="modal-overlay">
+    <div class="settings-card">
+      <div class="settings-title">
+        <span>⚙️ しどうしゃ せってい</span>
+        <button id="btnCloseSettings" class="btn btn-settings" style="padding: 4px 14px;">✕ とじる</button>
+      </div>
+
+      <!-- ステップ選択 -->
+      <div class="settings-group">
+        <label class="group-label">がくしゅう すてっぷ</label>
+        <div class="options-row" id="stepOptions">
+          <button class="option-btn selected" data-step="1">1: まる (1つ)</button>
+          <button class="option-btn" data-step="2">2: ふたつ (〇△)</button>
+          <button class="option-btn" data-step="3">3: みっつ (〇△□)</button>
+          <button class="option-btn" data-step="4">4: たくさん (6つ)</button>
+        </div>
+      </div>
+
+      <!-- 枠のヒント（色の有無） -->
+      <div class="settings-group">
+        <label class="group-label">わくの ヒント（いろ）</label>
+        <div class="options-row" id="colorHintOptions">
+          <button class="option-btn selected" data-colorhint="color">いろつき（かんたん）</button>
+          <button class="option-btn" data-colorhint="shadow">かげ・グレー（かたちに着目）</button>
+        </div>
+      </div>
+
+      <!-- 操作モード -->
+      <div class="settings-group">
+        <label class="group-label">そうさの ほうほう</label>
+        <div class="options-row" id="inputModeOptions">
+          <button class="option-btn selected" data-inputmode="drag">ドラッグ＆ドロップ</button>
+          <button class="option-btn" data-inputmode="tap">タップで えらぶ</button>
+          <button class="option-btn" data-inputmode="assist">かんたんタップ（自動移動）</button>
+        </div>
+      </div>
+
+      <!-- 形のかわいいお顔 -->
+      <div class="toggle-row">
+        <span class="toggle-label">かたちに おかおをつける（親しみやすさ）</span>
+        <label class="switch">
+          <input type="checkbox" id="toggleFace" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- 音声読み上げ -->
+      <div class="toggle-row">
+        <span class="toggle-label">こえの よみあげ（Web Speech API）</span>
+        <label class="switch">
+          <input type="checkbox" id="toggleSpeech" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- 効果音 -->
+      <div class="toggle-row">
+        <span class="toggle-label">こうかおん（チャイム・拍手）</span>
+        <label class="switch">
+          <input type="checkbox" id="toggleAudio" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- ひらがなラベル表示 -->
+      <div class="toggle-row">
+        <span class="toggle-label">なまえ（まる・さんかく・しかく）の ひょうじ</span>
+        <label class="switch">
+          <input type="checkbox" id="toggleLabel" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================
+     * アプリケーション定義・定数
+     * ========================================================= */
+    const SHAPE_DEFS = {
+      circle: {
+        id: 'circle',
+        name: 'まる',
+        color: '#FF5252',
+        lightColor: '#FFCDD2',
+        darkColor: '#D32F2F',
+        svg: (color, withFace) => `
+          <svg viewBox="0 0 100 100" class="shape-svg">
+            <circle cx="50" cy="50" r="44" fill="${color}" stroke="#FFFFFF" stroke-width="4"/>
+            ${withFace ? `
+              <!-- 目 -->
+              <circle cx="36" cy="42" r="5" fill="#333333"/>
+              <circle cx="64" cy="42" r="5" fill="#333333"/>
+              <circle cx="38" cy="40" r="1.5" fill="#FFFFFF"/>
+              <circle cx="66" cy="40" r="1.5" fill="#FFFFFF"/>
+              <!-- ほっぺ -->
+              <circle cx="28" cy="52" r="6" fill="#FFA4A4" opacity="0.8"/>
+              <circle cx="72" cy="52" r="6" fill="#FFA4A4" opacity="0.8"/>
+              <!-- 口（にっこり） -->
+              <path d="M 40 54 Q 50 64 60 54" fill="none" stroke="#333333" stroke-width="3.5" stroke-linecap="round"/>
+            ` : ''}
+          </svg>
+        `,
+        slotSvg: (isShadow, color) => `
+          <svg viewBox="0 0 100 100" class="slot-svg">
+            <circle cx="50" cy="50" r="44" 
+              fill="${isShadow ? '#E0E0E0' : color}" 
+              opacity="${isShadow ? '0.65' : '0.22'}" 
+              stroke="${isShadow ? '#9E9E9E' : color}" 
+              stroke-width="4" stroke-dasharray="6 4"/>
+          </svg>
+        `
+      },
+      triangle: {
+        id: 'triangle',
+        name: 'さんかく',
+        color: '#FFA726',
+        lightColor: '#FFE0B2',
+        darkColor: '#F57C00',
+        svg: (color, withFace) => `
+          <svg viewBox="0 0 100 100" class="shape-svg">
+            <polygon points="50,10 92,86 8,86" fill="${color}" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round"/>
+            ${withFace ? `
+              <circle cx="42" cy="52" r="4.5" fill="#333333"/>
+              <circle cx="58" cy="52" r="4.5" fill="#333333"/>
+              <circle cx="43.5" cy="50.5" r="1.5" fill="#FFFFFF"/>
+              <circle cx="59.5" cy="50.5" r="1.5" fill="#FFFFFF"/>
+              <circle cx="34" cy="60" r="5" fill="#FFE082" opacity="0.9"/>
+              <circle cx="66" cy="60" r="5" fill="#FFE082" opacity="0.9"/>
+              <path d="M 45 62 Q 50 69 55 62" fill="none" stroke="#333333" stroke-width="3" stroke-linecap="round"/>
+            ` : ''}
+          </svg>
+        `,
+        slotSvg: (isShadow, color) => `
+          <svg viewBox="0 0 100 100" class="slot-svg">
+            <polygon points="50,10 92,86 8,86" 
+              fill="${isShadow ? '#E0E0E0' : color}" 
+              opacity="${isShadow ? '0.65' : '0.22'}" 
+              stroke="${isShadow ? '#9E9E9E' : color}" 
+              stroke-width="4" stroke-dasharray="6 4" stroke-linejoin="round"/>
+          </svg>
+        `
+      },
+      square: {
+        id: 'square',
+        name: 'しかく',
+        color: '#42A5F5',
+        lightColor: '#BBDEFB',
+        darkColor: '#1976D2',
+        svg: (color, withFace) => `
+          <svg viewBox="0 0 100 100" class="shape-svg">
+            <rect x="10" y="10" width="80" height="80" rx="14" fill="${color}" stroke="#FFFFFF" stroke-width="4"/>
+            ${withFace ? `
+              <circle cx="38" cy="44" r="5" fill="#333333"/>
+              <circle cx="62" cy="44" r="5" fill="#333333"/>
+              <circle cx="40" cy="42" r="1.5" fill="#FFFFFF"/>
+              <circle cx="64" cy="42" r="1.5" fill="#FFFFFF"/>
+              <circle cx="30" cy="54" r="6" fill="#B3E5FC" opacity="0.9"/>
+              <circle cx="70" cy="54" r="6" fill="#B3E5FC" opacity="0.9"/>
+              <path d="M 42 56 Q 50 66 58 56" fill="none" stroke="#333333" stroke-width="3.5" stroke-linecap="round"/>
+            ` : ''}
+          </svg>
+        `,
+        slotSvg: (isShadow, color) => `
+          <svg viewBox="0 0 100 100" class="slot-svg">
+            <rect x="10" y="10" width="80" height="80" rx="14" 
+              fill="${isShadow ? '#E0E0E0' : color}" 
+              opacity="${isShadow ? '0.65' : '0.22'}" 
+              stroke="${isShadow ? '#9E9E9E' : color}" 
+              stroke-width="4" stroke-dasharray="6 4"/>
+          </svg>
+        `
+      }
+    };
+
+    /* ステップ構成（スモールステップ＆1対1対応の明確化） */
+    const STEP_CONFIGS = {
+      1: { name: 'ステップ 1：まる', slots: ['circle'], pieces: ['circle'] },
+      2: { name: 'ステップ 2：ふたつ (〇と△)', slots: ['circle', 'triangle'], pieces: ['circle', 'triangle'] },
+      3: { name: 'ステップ 3：みっつ (〇・△・□)', slots: ['circle', 'triangle', 'square'], pieces: ['circle', 'triangle', 'square'] },
+      4: { name: 'ステップ 4：たくさん (6つ)', slots: ['circle', 'triangle', 'square', 'circle', 'triangle', 'square'], pieces: ['circle', 'triangle', 'square', 'circle', 'triangle', 'square'] }
+    };
+
+    /* アプリ状態 */
+    const state = {
+      step: 1,
+      colorHint: 'color', // 'color' or 'shadow'
+      inputMode: 'drag',  // 'drag', 'tap', 'assist'
+      withFace: true,
+      soundEnabled: true,
+      speechEnabled: true,
+      audioEnabled: true,
+      showLabel: true,
+      
+      // ゲーム進行
+      activePieces: [],   // { id, type, fitted: bool, el: HTMLElement, holderEl: HTMLElement, currentSlot: null }
+      activeSlots: [],    // { id, type, el: HTMLElement, fittedPiece: null }
+      selectedPiece: null,// タップ操作用
+      draggedPiece: null,
+      dragOffset: { x: 0, y: 0 },
+      touchId: null
+    };
+
+    /* =========================================================
+     * Web Audio API 音響合成（外部ファイル完全不要）
+     * ========================================================= */
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    const Sound = {
+      // ピースを掴んだとき（ポン）
+      pickup() {
+        if (!state.soundEnabled || !state.audioEnabled) return;
+        try {
+          const ctx = getAudioContext();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(420, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(620, ctx.currentTime + 0.08);
+          gain.gain.setValueAtTime(0.18, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.08);
+        } catch(e) {}
+      },
+
+      // ピッタリはまったとき（キラリチャイム♪）
+      snap() {
+        if (!state.soundEnabled || !state.audioEnabled) return;
+        try {
+          const ctx = getAudioContext();
+          const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+          notes.forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            const start = ctx.currentTime + idx * 0.07;
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, start);
+            gain.gain.setValueAtTime(0.22, start);
+            gain.gain.exponentialRampToValueAtTime(0.001, start + 0.35);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(start);
+            osc.stop(start + 0.35);
+          });
+        } catch(e) {}
+      },
+
+      // 違った枠から優しく戻るとき（ぽよん）
+      bounce() {
+        if (!state.soundEnabled || !state.audioEnabled) return;
+        try {
+          const ctx = getAudioContext();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(320, ctx.currentTime);
+          osc.frequency.linearRampToValueAtTime(220, ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.2);
+        } catch(e) {}
+      },
+
+      // 全問正解ファンファーレ＆拍手
+      celebrate() {
+        if (!state.soundEnabled || !state.audioEnabled) return;
+        try {
+          const ctx = getAudioContext();
+          const melody = [
+            { f: 523.25, d: 0.14 }, // ド
+            { f: 659.25, d: 0.14 }, // ミ
+            { f: 783.99, d: 0.14 }, // ソ
+            { f: 1046.50, d: 0.28 }, // ド
+            { f: 783.99, d: 0.14 }, // ソ
+            { f: 1046.50, d: 0.65 }  // ドーー
+          ];
+          let curTime = ctx.currentTime + 0.05;
+          melody.forEach(item => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(item.f, curTime);
+            gain.gain.setValueAtTime(0.25, curTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, curTime + item.d);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(curTime);
+            osc.stop(curTime + item.d);
+            curTime += item.d + 0.02;
+          });
+
+          // 拍手（ノイズフィルター合成）
+          setTimeout(() => {
+            for (let i = 0; i < 16; i++) {
+              setTimeout(() => {
+                try {
+                  const bufferSize = ctx.sampleRate * 0.08;
+                  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                  const data = buffer.getChannelData(0);
+                  for (let j = 0; j < bufferSize; j++) {
+                    data[j] = Math.random() * 2 - 1;
+                  }
+                  const noise = ctx.createBufferSource();
+                  noise.buffer = buffer;
+                  const filter = ctx.createBiquadFilter();
+                  filter.type = 'bandpass';
+                  filter.frequency.value = 1000 + Math.random() * 800;
+                  const gain = ctx.createGain();
+                  gain.gain.setValueAtTime(0.13, ctx.currentTime);
+                  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+                  noise.connect(filter);
+                  filter.connect(gain);
+                  gain.connect(ctx.destination);
+                  noise.start();
+                } catch(err) {}
+              }, i * 70);
+            }
+          }, 550);
+        } catch(e) {}
+      }
+    };
+
+    /* =========================================================
+     * Web Speech API 日本語音声読み上げ
+     * ========================================================= */
+    const Speech = {
+      say(text) {
+        if (!state.soundEnabled || !state.speechEnabled) return;
+        if (!('speechSynthesis' in window)) return;
+        
+        try {
+          window.speechSynthesis.cancel();
+          const uttr = new SpeechSynthesisUtterance(text);
+          uttr.lang = 'ja-JP';
+          uttr.rate = 1.0;
+          uttr.pitch = 1.25; // 親しみやすい明るい声
+          window.speechSynthesis.speak(uttr);
+        } catch(e) {}
+      }
+    };
+
+    /* =========================================================
+     * 紙吹雪（Canvasアニメーション）
+     * ========================================================= */
+    const Confetti = {
+      canvas: document.getElementById('confettiCanvas'),
+      ctx: document.getElementById('confettiCanvas').getContext('2d'),
+      particles: [],
+      animId: null,
+
+      resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      },
+
+      start() {
+        this.resize();
+        this.particles = [];
+        const colors = ['#FF5252', '#FFA726', '#FFEB3B', '#4CAF50', '#42A5F5', '#AB47BC', '#FF4081'];
+        for (let i = 0; i < 90; i++) {
+          this.particles.push({
+            x: Math.random() * this.canvas.width,
+            y: -20 - Math.random() * 100,
+            size: Math.random() * 12 + 8,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            vx: (Math.random() - 0.5) * 4,
+            vy: Math.random() * 4 + 3,
+            rot: Math.random() * 360,
+            vRot: (Math.random() - 0.5) * 8
+          });
+        }
+        if (this.animId) cancelAnimationFrame(this.animId);
+        this.loop();
+      },
+
+      loop() {
+        Confetti.ctx.clearRect(0, 0, Confetti.canvas.width, Confetti.canvas.height);
+        let hasActive = false;
+
+        Confetti.particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.rot += p.vRot;
+
+          if (p.y < Confetti.canvas.height + 30) {
+            hasActive = true;
+            Confetti.ctx.save();
+            Confetti.ctx.translate(p.x, p.y);
+            Confetti.ctx.rotate((p.rot * Math.PI) / 180);
+            Confetti.ctx.fillStyle = p.color;
+            Confetti.ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.7);
+            Confetti.ctx.restore();
+          }
+        });
+
+        if (hasActive) {
+          Confetti.animId = requestAnimationFrame(Confetti.loop);
+        } else {
+          Confetti.stop();
+        }
+      },
+
+      stop() {
+        if (this.animId) cancelAnimationFrame(this.animId);
+        this.animId = null;
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      }
+    };
+
+    /* =========================================================
+     * ゲーム初期化・描画
+     * ========================================================= */
+    const slotsContainer = document.getElementById('slotsContainer');
+    const piecesContainer = document.getElementById('piecesContainer');
+    const stepBadge = document.getElementById('stepBadge');
+    const clearModal = document.getElementById('clearModal');
+    const settingsModal = document.getElementById('settingsModal');
+
+    function initGame(stepNum = state.step) {
+      state.step = stepNum;
+      const config = STEP_CONFIGS[state.step];
+      stepBadge.textContent = config.name;
+
+      // モーダルと紙吹雪を閉じる
+      clearModal.classList.remove('active');
+      Confetti.stop();
+      state.selectedPiece = null;
+      state.draggedPiece = null;
+
+      // 6個あるステップ4の場合はスタイルをコンパクトに
+      if (config.slots.length > 3) {
+        slotsContainer.classList.add('compact');
+        piecesContainer.classList.add('compact');
+      } else {
+        slotsContainer.classList.remove('compact');
+        piecesContainer.classList.remove('compact');
+      }
+
+      // スロット初期化
+      slotsContainer.innerHTML = '';
+      state.activeSlots = [];
+
+      config.slots.forEach((shapeType, index) => {
+        const shape = SHAPE_DEFS[shapeType];
+        const isShadow = state.colorHint === 'shadow';
+        const slotEl = document.createElement('div');
+        slotEl.className = 'slot';
+        slotEl.dataset.type = shapeType;
+        slotEl.dataset.slotId = `slot-${index}-${shapeType}`;
+
+        const svgHtml = shape.slotSvg(isShadow, shape.color);
+        const labelHtml = state.showLabel ? `<div class="slot-label">${shape.name}</div>` : '';
+        slotEl.innerHTML = svgHtml + labelHtml;
+
+        slotsContainer.appendChild(slotEl);
+        state.activeSlots.push({
+          id: slotEl.dataset.slotId,
+          type: shapeType,
+          el: slotEl,
+          fittedPiece: null
+        });
+
+        // タップモード用スロットクリック
+        slotEl.addEventListener('pointerdown', (e) => onSlotClick(e, slotEl));
+      });
+
+      // ピース初期化（シャッフルして配置）
+      piecesContainer.innerHTML = '';
+      state.activePieces = [];
+
+      // ピース配列をコピーしてシャッフル
+      const shuffledPieces = [...config.pieces].sort(() => Math.random() - 0.5);
+
+      shuffledPieces.forEach((shapeType, index) => {
+        const shape = SHAPE_DEFS[shapeType];
+        
+        // 置き場所枠
+        const holderEl = document.createElement('div');
+        holderEl.className = 'piece-holder';
+        holderEl.id = `holder-${index}`;
+
+        // ピース本体
+        const pieceEl = document.createElement('div');
+        pieceEl.className = 'piece';
+        pieceEl.dataset.type = shapeType;
+        pieceEl.dataset.pieceId = `piece-${index}-${shapeType}`;
+
+        const svgHtml = shape.svg(shape.color, state.withFace);
+        const labelHtml = state.showLabel ? `<div class="piece-label">${shape.name}</div>` : '';
+        pieceEl.innerHTML = svgHtml + labelHtml;
+
+        holderEl.appendChild(pieceEl);
+        piecesContainer.appendChild(holderEl);
+
+        const pieceObj = {
+          id: pieceEl.dataset.pieceId,
+          type: shapeType,
+          fitted: false,
+          el: pieceEl,
+          holderEl: holderEl,
+          currentSlot: null
+        };
+        state.activePieces.push(pieceObj);
+
+        // イベントリスナー登録
+        setupPieceEvents(pieceObj);
+      });
+    }
+
+    /* =========================================================
+     * 操作ロジック（ドラッグ＆ドロップ ＋ タップモード）
+     * ========================================================= */
+    function setupPieceEvents(pieceObj) {
+      const el = pieceObj.el;
+
+      el.addEventListener('pointerdown', (e) => {
+        if (pieceObj.fitted) return;
+        e.preventDefault();
+
+        // オーディオアンロック
+        getAudioContext();
+
+        // 音声発声と効果音
+        const shape = SHAPE_DEFS[pieceObj.type];
+        Speech.say(shape.name);
+        Sound.pickup();
+
+        // かんたんアシストモード（タップしたら正しい空き枠に自動移動）
+        if (state.inputMode === 'assist') {
+          handleAssistFit(pieceObj);
+          return;
+        }
+
+        // タップモード
+        if (state.inputMode === 'tap') {
+          handleTapSelection(pieceObj);
+          return;
+        }
+
+        // 通常のドラッグ＆ドロップモード
+        startDrag(e, pieceObj);
+      });
+    }
+
+    // ドラッグ開始
+    function startDrag(e, pieceObj) {
+      state.draggedPiece = pieceObj;
+      state.touchId = e.pointerId;
+      pieceObj.el.setPointerCapture(e.pointerId);
+
+      const rect = pieceObj.el.getBoundingClientRect();
+      state.dragOffset = {
+        x: e.clientX - (rect.left + rect.width / 2),
+        y: e.clientY - (rect.top + rect.height / 2)
+      };
+
+      pieceObj.el.classList.add('dragging');
+      movePieceTo(pieceObj, e.clientX - state.dragOffset.x, e.clientY - state.dragOffset.y);
+
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
+      window.addEventListener('pointercancel', onPointerUp);
+    }
+
+    // ドラッグ中
+    function onPointerMove(e) {
+      if (!state.draggedPiece || e.pointerId !== state.touchId) return;
+
+      const pX = e.clientX - state.dragOffset.x;
+      const pY = e.clientY - state.dragOffset.y;
+      movePieceTo(state.draggedPiece, pX, pY);
+
+      // 最も近い空きスロットをハイライト
+      checkHoverSlot(state.draggedPiece, pX, pY);
+    }
+
+    // ドラッグ終了
+    function onPointerUp(e) {
+      if (!state.draggedPiece || e.pointerId !== state.touchId) return;
+
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerUp);
+
+      const piece = state.draggedPiece;
+      piece.el.classList.remove('dragging');
+      state.draggedPiece = null;
+
+      // ホバー解除
+      state.activeSlots.forEach(s => s.el.classList.remove('hovered'));
+
+      // ドロップ判定
+      const pX = e.clientX - state.dragOffset.x;
+      const pY = e.clientY - state.dragOffset.y;
+      evaluateDrop(piece, pX, pY);
+    }
+
+    // ピースを画面座標に動かす
+    function movePieceTo(pieceObj, centerX, centerY) {
+      const el = pieceObj.el;
+      el.style.position = 'fixed';
+      el.style.left = `${centerX - el.offsetWidth / 2}px`;
+      el.style.top = `${centerY - el.offsetHeight / 2}px`;
+      el.style.zIndex = '100';
+    }
+
+    // 近接スロットのハイライト
+    function checkHoverSlot(pieceObj, x, y) {
+      state.activeSlots.forEach(slotObj => {
+        // 空いているスロットのみ
+        if (slotObj.fittedPiece) {
+          slotObj.el.classList.remove('hovered');
+          return;
+        }
+
+        const slotRect = slotObj.el.getBoundingClientRect();
+        const slotCenterX = slotRect.left + slotRect.width / 2;
+        const slotCenterY = slotRect.top + slotRect.height / 2;
+        const dist = Math.hypot(x - slotCenterX, y - slotCenterY);
+
+        if (dist < 115) {
+          slotObj.el.classList.add('hovered');
+        } else {
+          slotObj.el.classList.remove('hovered');
+        }
+      });
+    }
+
+    // ドロップ判定
+    function evaluateDrop(pieceObj, x, y) {
+      let matchedSlot = null;
+      let minDistance = 125; // 寛容な吸着判定（微細運動支援）
+
+      state.activeSlots.forEach(slotObj => {
+        if (slotObj.fittedPiece) return; // 既に埋まっている枠は除外
+
+        const slotRect = slotObj.el.getBoundingClientRect();
+        const slotCenterX = slotRect.left + slotRect.width / 2;
+        const slotCenterY = slotRect.top + slotRect.height / 2;
+        const dist = Math.hypot(x - slotCenterX, y - slotCenterY);
+
+        if (dist < minDistance) {
+          minDistance = dist;
+          matchedSlot = slotObj;
+        }
+      });
+
+      // 正しい形の空き枠にドロップされたか？
+      if (matchedSlot && matchedSlot.type === pieceObj.type) {
+        fitPieceIntoSlot(pieceObj, matchedSlot);
+      } else {
+        // 不正解または枠外：優しいぽよん音でホーム位置へ戻る
+        returnToHome(pieceObj);
+      }
+    }
+
+    // スロットにはめる処理
+    function fitPieceIntoSlot(pieceObj, slotObj) {
+      pieceObj.fitted = true;
+      pieceObj.currentSlot = slotObj;
+      slotObj.fittedPiece = pieceObj;
+
+      pieceObj.el.classList.remove('selected');
+      pieceObj.el.classList.add('fitted');
+
+      // 枠のハイライト解除
+      slotObj.el.classList.remove('hovered', 'suggested');
+
+      // 位置合わせ
+      repositionPiece(pieceObj);
+
+      // 効果音と褒め音声
+      Sound.snap();
+      const word = (pieceObj.type === 'circle') ? 'まる！ぴったり！' : (pieceObj.type === 'triangle' ? 'さんかく！ぴったり！' : 'しかく！ぴったり！');
+      Speech.say(word);
+
+      // 全問クリア確認
+      checkGameClear();
+    }
+
+    // ピースを現在のはまった枠の位置に配置
+    function repositionPiece(pieceObj) {
+      if (!pieceObj.fitted || !pieceObj.currentSlot) return;
+      const slotRect = pieceObj.currentSlot.el.getBoundingClientRect();
+      const slotCenterX = slotRect.left + slotRect.width / 2;
+      const slotCenterY = slotRect.top + slotRect.height / 2;
+
+      pieceObj.el.style.transition = 'all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      pieceObj.el.style.position = 'fixed';
+      pieceObj.el.style.left = `${slotCenterX - pieceObj.el.offsetWidth / 2}px`;
+      pieceObj.el.style.top = `${slotCenterY - pieceObj.el.offsetHeight / 2}px`;
+      pieceObj.el.style.transform = 'scale(1.05)';
+      pieceObj.el.style.zIndex = '10';
+    }
+
+    // 元の位置に優しく戻る
+    function returnToHome(pieceObj) {
+      Sound.bounce();
+      pieceObj.el.style.transition = 'all 0.35s ease-out';
+      
+      const holderRect = pieceObj.holderEl.getBoundingClientRect();
+      const hX = holderRect.left + holderRect.width / 2;
+      const hY = holderRect.top + holderRect.height / 2;
+
+      pieceObj.el.style.left = `${hX - pieceObj.el.offsetWidth / 2}px`;
+      pieceObj.el.style.top = `${hY - pieceObj.el.offsetHeight / 2}px`;
+      pieceObj.el.style.transform = 'scale(1)';
+
+      setTimeout(() => {
+        pieceObj.el.style.position = 'absolute';
+        pieceObj.el.style.left = '0';
+        pieceObj.el.style.top = '0';
+        pieceObj.el.style.transition = '';
+        pieceObj.el.style.zIndex = '5';
+      }, 360);
+    }
+
+    // タップ選択モードのハンドラ
+    function handleTapSelection(pieceObj) {
+      // 選択解除
+      if (state.selectedPiece === pieceObj) {
+        clearTapSelection();
+        return;
+      }
+
+      clearTapSelection();
+
+      state.selectedPiece = pieceObj;
+      pieceObj.el.classList.add('selected');
+
+      // 対応する空き枠を光らせて案内（認知的支援）
+      state.activeSlots.forEach(s => {
+        if (!s.fittedPiece && s.type === pieceObj.type) {
+          s.el.classList.add('suggested');
+        }
+      });
+    }
+
+    function clearTapSelection() {
+      if (state.selectedPiece) {
+        state.selectedPiece.el.classList.remove('selected');
+        state.selectedPiece = null;
+      }
+      state.activeSlots.forEach(s => s.el.classList.remove('suggested'));
+    }
+
+    function onSlotClick(e, slotEl) {
+      if (state.inputMode !== 'tap' || !state.selectedPiece) return;
+
+      const piece = state.selectedPiece;
+      const slotObj = state.activeSlots.find(s => s.id === slotEl.dataset.slotId);
+
+      if (slotObj && !slotObj.fittedPiece && piece.type === slotObj.type) {
+        clearTapSelection();
+        fitPieceIntoSlot(piece, slotObj);
+      } else {
+        clearTapSelection();
+        returnToHome(piece);
+      }
+    }
+
+    // かんたんアシストモード（タップしたら正しい空き枠に自動移動）
+    function handleAssistFit(pieceObj) {
+      const targetSlot = state.activeSlots.find(s => !s.fittedPiece && s.type === pieceObj.type);
+      if (targetSlot) {
+        const rect = pieceObj.el.getBoundingClientRect();
+        pieceObj.el.style.position = 'fixed';
+        pieceObj.el.style.left = `${rect.left}px`;
+        pieceObj.el.style.top = `${rect.top}px`;
+        pieceObj.el.style.zIndex = '100';
+
+        requestAnimationFrame(() => {
+          fitPieceIntoSlot(pieceObj, targetSlot);
+        });
+      }
+    }
+
+    // ゲームクリア判定
+    function checkGameClear() {
+      const allFitted = state.activePieces.every(p => p.fitted);
+      if (allFitted) {
+        setTimeout(() => {
+          triggerGameClear();
+        }, 550);
+      }
+    }
+
+    // クリア演出
+    function triggerGameClear() {
+      Sound.celebrate();
+      Confetti.start();
+      Speech.say('たいへん よくできました！ぜんぶ ぴったり はいったね！');
+
+      const clearTextSub = document.getElementById('clearTextSub');
+      const btnNextStep = document.getElementById('btnNextStep');
+
+      if (state.step < 4) {
+        clearTextSub.textContent = `すてっぷ ${state.step} クリア！ つぎの すてっぷへ いってみよう！`;
+        btnNextStep.style.display = 'inline-flex';
+      } else {
+        clearTextSub.textContent = 'ぜんぶの すてっぷを クリアしたよ！ はなまる だいせいこう！';
+        btnNextStep.style.display = 'none';
+      }
+
+      clearModal.classList.add('active');
+    }
+
+    // ウィンドウリサイズ・全画面切り替え時の再配置
+    function repositionAll() {
+      Confetti.resize();
+      state.activePieces.forEach(p => {
+        if (p.fitted) {
+          repositionPiece(p);
+        }
+      });
+    }
+    window.addEventListener('resize', repositionAll);
+
+    /* =========================================================
+     * UI コントロール & 設定イベント
+     * ========================================================= */
+    // やりなおすボタン
+    document.getElementById('btnReset').addEventListener('click', () => {
+      initGame(state.step);
+    });
+
+    // おと ON/OFF 切り替え
+    const btnSound = document.getElementById('btnSound');
+    const soundIcon = document.getElementById('soundIcon');
+    btnSound.addEventListener('click', () => {
+      state.soundEnabled = !state.soundEnabled;
+      btnSound.children[1].textContent = `おと：${state.soundEnabled ? 'ON' : 'OFF'}`;
+      soundIcon.textContent = state.soundEnabled ? '🔊' : '🔇';
+    });
+
+    // 全画面表示ボタン
+    const btnFullscreen = document.getElementById('btnFullscreen');
+    const fsIcon = document.getElementById('fsIcon');
+    btnFullscreen.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().then(() => {
+          setTimeout(repositionAll, 100);
+        }).catch(() => {});
+        fsIcon.textContent = '🗗';
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().then(() => {
+            setTimeout(repositionAll, 100);
+          });
+        }
+        fsIcon.textContent = '⛶';
+      }
+    });
+
+    // クリアモーダルのボタン
+    document.getElementById('btnReplay').addEventListener('click', () => {
+      initGame(state.step);
+    });
+
+    document.getElementById('btnNextStep').addEventListener('click', () => {
+      if (state.step < 4) {
+        initGame(state.step + 1);
+      } else {
+        initGame(1);
+      }
+    });
+
+    // 設定モーダルの開閉
+    document.getElementById('btnSettings').addEventListener('click', () => {
+      settingsModal.classList.add('active');
+    });
+
+    document.getElementById('btnCloseSettings').addEventListener('click', () => {
+      settingsModal.classList.remove('active');
+    });
+
+    // ステップ設定ボタン
+    document.querySelectorAll('#stepOptions .option-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#stepOptions .option-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        const step = parseInt(btn.dataset.step, 10);
+        settingsModal.classList.remove('active');
+        initGame(step);
+      });
+    });
+
+    // 枠ヒント設定ボタン
+    document.querySelectorAll('#colorHintOptions .option-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#colorHintOptions .option-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        state.colorHint = btn.dataset.colorhint;
+        initGame(state.step);
+      });
+    });
+
+    // 操作モード設定ボタン
+    document.querySelectorAll('#inputModeOptions .option-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#inputModeOptions .option-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        state.inputMode = btn.dataset.inputmode;
+        
+        const guide = document.getElementById('guideBanner');
+        if (state.inputMode === 'drag') {
+          guide.textContent = 'おなじ かたちの ところに もっていこう！';
+        } else if (state.inputMode === 'tap') {
+          guide.textContent = 'かたちを タップしてから、おなじ わくを タップしよう！';
+        } else {
+          guide.textContent = 'かたちを タップすると、じどうで わくに はいるよ！';
+        }
+      });
+    });
+
+    // トグルスイッチ設定
+    document.getElementById('toggleFace').addEventListener('change', (e) => {
+      state.withFace = e.target.checked;
+      initGame(state.step);
+    });
+
+    document.getElementById('toggleSpeech').addEventListener('change', (e) => {
+      state.speechEnabled = e.target.checked;
+    });
+
+    document.getElementById('toggleAudio').addEventListener('change', (e) => {
+      state.audioEnabled = e.target.checked;
+    });
+
+    document.getElementById('toggleLabel').addEventListener('change', (e) => {
+      state.showLabel = e.target.checked;
+      initGame(state.step);
+    });
+
+    // アプリ（index.html）のダウンロード処理
+    document.getElementById('btnDownload').addEventListener('click', () => {
+      // ピースやモーダルの一時状態を初期化してクリーンなHTMLで保存
+      const docHtml = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([docHtml], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'index.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      Speech.say('ダウンロードしました');
+    });
+
+    // 起動時初期化
+    window.addEventListener('DOMContentLoaded', () => {
+      initGame(1);
+    });
+  </script>
+</body>
+</html>
